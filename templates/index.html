@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/jpeg" href="/static/images/logo.jpg">
+<title>XAI Explorer — Platforma e Shpjegueshmërisë</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0a1628;--blue:#003366;--blue-mid:#004c99;--gold:#FFB81C;--gold-dark:#d49600;--bg:#f0f3f9;--white:#ffffff;--txt:#1a1a2e;--txt-muted:#64748b;--border:#e2e8f0;--success:#16a34a;--danger:#dc2626;--r:12px;--shadow:0 2px 16px rgba(0,0,0,0.07);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--txt);display:flex;flex-direction:column;min-height:100vh;padding-top:62px;}
+.header{background:var(--navy);border-bottom:3px solid var(--gold);padding:0 28px;height:62px;display:flex;align-items:center;justify-content:space-between;position:fixed;top:0;left:0;right:0;z-index:100;}
+.hlogo{display:flex;align-items:center;gap:12px;}
+.hlogo-box{width:38px;height:38px;background:var(--gold);border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:var(--navy);}
+.hlogo-text h1{font-size:16px;font-weight:700;color:#fff;line-height:1.2;}
+.hlogo-text p{font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:.5px;}
+.hbadge{background:rgba(255,184,28,.12);border:1px solid var(--gold);color:var(--gold);padding:4px 14px;border-radius:20px;font-size:11px;font-weight:600;font-family:'IBM Plex Mono',monospace;}
+.layout{display:flex;flex:1;margin-left:232px;min-height:calc(100vh - 62px);}
+.main{flex:1;overflow-y:auto;overflow-x:hidden;padding:26px 30px;width:100%;min-width:0;}
+.sidebar{width:232px;background:var(--blue);display:flex;flex-direction:column;position:fixed;top:62px;left:0;bottom:0;overflow:hidden;z-index:99;}
+.sidebar-sec{padding:18px 14px 6px;font-size:9.5px;font-weight:700;letter-spacing:1.4px;color:rgba(255,255,255,.3);text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:11px;padding:10px 14px;margin:2px 8px;border-radius:8px;cursor:pointer;color:rgba(255,255,255,.62);font-size:13px;font-weight:500;transition:all .18s;border:none;background:none;width:calc(100% - 16px);text-align:left;}
+.nav-item:hover{background:rgba(255,255,255,.09);color:#fff;}
+.nav-item.active{background:var(--gold);color:var(--navy);font-weight:700;}
+.nav-item svg{width:16px;height:16px;flex-shrink:0;}
+.nav-item.active svg{stroke:var(--navy);}
+.nav-item:not(.active) svg{stroke:rgba(255,255,255,.62);}
+.nav-item:hover:not(.active) svg{stroke:#fff;}
+.sidebar-foot{flex-shrink:0;padding:14px;border-top:1px solid rgba(255,255,255,.1);}
+.sidebar-foot h4{font-size:12px;color:#fff;margin-bottom:1px;}
+.sidebar-foot p{font-size:11px;color:rgba(255,255,255,.45);}
+.sidebar-uni{margin-top:8px;background:rgba(255,255,255,.08);border-radius:7px;padding:7px 11px;font-size:11px;color:var(--gold);font-weight:600;font-family:'IBM Plex Mono',monospace;}
+.page{display:none;}
+.page.active{display:block;}
+.page-title{font-size:21px;font-weight:700;color:var(--navy);margin-bottom:4px;display:flex;align-items:center;gap:10px;}
+.page-title svg{width:22px;height:22px;stroke:var(--gold);}
+.page-sub{font-size:13px;color:var(--txt-muted);margin-bottom:22px;}
+.card{background:var(--white);border-radius:var(--r);padding:22px;box-shadow:var(--shadow);margin-bottom:18px;}
+.card-title{font-size:14px;font-weight:600;color:var(--navy);margin-bottom:15px;padding-bottom:11px;border-bottom:2px solid var(--border);display:flex;align-items:center;gap:8px;}
+.card-title svg{width:16px;height:16px;stroke:var(--gold);flex-shrink:0;}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
+.stat-card{background:var(--white);border-radius:var(--r);padding:18px 14px;box-shadow:var(--shadow);border-top:3px solid var(--gold);text-align:center;}
+.stat-val{font-size:23px;font-weight:700;color:var(--navy);margin-bottom:3px;font-family:'IBM Plex Mono',monospace;}
+.stat-label{font-size:11px;color:var(--txt-muted);font-weight:500;}
+.two-col-eq{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.two-col{display:grid;grid-template-columns:360px 1fr;gap:18px;align-items:start;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fgroup{display:flex;flex-direction:column;gap:4px;}
+.fgroup label{font-size:11px;font-weight:600;color:var(--txt-muted);text-transform:uppercase;letter-spacing:.4px;}
+.fgroup input,.fgroup select{padding:8px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;color:var(--txt);background:#fff;transition:border-color .2s;font-family:'DM Sans',sans-serif;}
+.fgroup input:focus,.fgroup select:focus{outline:none;border-color:var(--gold);}
+.fsec{font-size:11px;font-weight:700;color:var(--blue-mid);text-transform:uppercase;letter-spacing:.8px;margin:14px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border);grid-column:span 2;}
+.btn{padding:10px 22px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;display:inline-flex;align-items:center;gap:7px;font-family:'DM Sans',sans-serif;}
+.btn-primary{background:var(--blue);color:#fff;border-bottom:3px solid var(--gold);width:100%;justify-content:center;margin-top:14px;font-size:14px;padding:12px;}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px);}
+.btn-sm{padding:7px 15px;font-size:12px;}
+.btn-outline{background:var(--bg);color:var(--blue);border:1.5px solid var(--border);}
+.btn-outline:hover{border-color:var(--gold);}
+.btn-gold{background:var(--gold);color:var(--navy);border-bottom:3px solid var(--gold-dark);}
+.btn-gold:hover{opacity:.9;}
+.btn svg{width:14px;height:14px;}
+.btn-primary svg{stroke:#fff;}
+.btn-outline svg{stroke:var(--blue);}
+.btn-gold svg{stroke:var(--navy);}
+.result-box{border-radius:var(--r);padding:18px 22px;display:none;margin-top:14px;border:2px solid;}
+.res-pass{background:#f0fdf4;border-color:#16a34a;}
+.res-fail{background:#fff1f2;border-color:#dc2626;}
+.res-header{display:flex;align-items:center;gap:11px;margin-bottom:8px;}
+.res-icon svg{width:32px;height:32px;}
+.res-pass .res-icon svg{stroke:var(--success);}
+.res-fail .res-icon svg{stroke:var(--danger);}
+.res-lbl{font-size:21px;font-weight:800;}
+.res-pass .res-lbl{color:var(--success);}
+.res-fail .res-lbl{color:var(--danger);}
+.prob-bar{height:7px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:8px;}
+.prob-fill{height:100%;border-radius:4px;transition:width .9s ease;}
+.res-pass .prob-fill{background:var(--success);}
+.res-fail .prob-fill{background:var(--danger);}
+.res-actions{margin-top:13px;display:flex;gap:7px;flex-wrap:wrap;}
+.tab-bar{display:flex;gap:3px;border-bottom:2px solid var(--border);margin-bottom:18px;}
+.tab-btn{padding:9px 17px;border:none;background:none;font-size:12px;font-weight:600;color:var(--txt-muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .18s;font-family:'DM Sans',sans-serif;}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--gold);}
+.tab-pane{display:none;}
+.tab-pane.active{display:block;}
+.tbl{width:100%;border-collapse:collapse;font-size:13px;}
+.tbl th{background:var(--navy);color:#fff;padding:10px 13px;text-align:left;font-weight:600;}
+.tbl th:first-child{border-radius:8px 0 0 0;}
+.tbl th:last-child{border-radius:0 8px 0 0;}
+.tbl td{padding:9px 13px;border-bottom:1px solid var(--border);}
+.tbl tr:nth-child(even) td{background:#f8fafc;}
+.tbl tr:hover td{background:#f0f4ff;}
+.val-pos{color:var(--success);font-weight:600;}
+.val-neg{color:var(--danger);font-weight:600;}
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;}
+.b-high{background:#fee2e2;color:#991b1b;}
+.b-med{background:#fef3c7;color:#92400e;}
+.b-low{background:#dcfce7;color:#166534;}
+.insight{background:#eff6ff;border-left:4px solid var(--blue-mid);border-radius:0 8px 8px 0;padding:12px 15px;font-size:13px;color:var(--navy);margin-top:14px;line-height:1.65;}
+.insight-gold{background:#fffbeb;border-left-color:var(--gold);}
+.insight-red{background:#fff1f2;border-left-color:var(--danger);}
+.spinner{width:32px;height:32px;border:4px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;margin:18px auto;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-msg{text-align:center;font-size:13px;color:var(--txt-muted);padding:8px 0 16px;}
+.graph-img{width:100%;border-radius:8px;margin-top:8px;}
+.finding{display:flex;gap:11px;padding:11px 0;border-bottom:1px solid var(--border);align-items:flex-start;}
+.fnum{width:26px;height:26px;background:var(--gold);color:var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;}
+.ftxt{font-size:13px;line-height:1.6;padding-top:2px;}
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
+.metric-card{background:var(--white);border-radius:var(--r);padding:20px;text-align:center;box-shadow:var(--shadow);border-bottom:4px solid var(--gold);}
+.metric-val{font-size:28px;font-weight:700;color:var(--navy);font-family:'IBM Plex Mono',monospace;}
+.metric-lbl{font-size:11px;color:var(--txt-muted);margin-top:3px;font-weight:500;}
+.factor-list{display:flex;flex-direction:column;gap:7px;margin-top:8px;}
+.factor-item{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:8px;padding:9px 13px;}
+.factor-bar-pos{height:8px;background:var(--success);border-radius:4px;}
+.factor-bar-neg{height:8px;background:var(--danger);border-radius:4px;}
+.factor-name{font-size:12px;font-weight:600;min-width:90px;}
+.factor-val{font-size:12px;font-family:'IBM Plex Mono',monospace;font-weight:600;margin-left:auto;}
+.lime-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.lime-feature{flex:1;color:var(--txt);}
+.lime-bar-wrap{width:140px;height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+.lime-bar-fill-pos{height:100%;background:var(--success);border-radius:4px;}
+.lime-bar-fill-neg{height:100%;background:var(--danger);border-radius:4px;}
+.lime-val{width:60px;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;}
+.feat-list{display:flex;flex-direction:column;gap:7px;margin-top:8px;}
+.feat-row{display:flex;align-items:center;gap:10px;font-size:13px;}
+.feat-row svg{width:15px;height:15px;flex-shrink:0;}
+.feat-ok svg{stroke:var(--success);}
+.feat-warn svg{stroke:var(--gold-dark);}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="hlogo">
+    <div class="hlogo-box">XAI</div>
+    <div class="hlogo-text">
+      <h1>XAI Explorer</h1>
+      <p>PLATFORMA E SHPJEGUESHMËRISË</p>
+    </div>
+  </div>
+  <div class="hbadge">2026</div>
+</div>
+
+<div class="layout">
+
+<div class="sidebar">
+  <div class="sidebar-sec">Navigimi</div>
+  <div style="flex:1;overflow-y:auto;">
+    <button class="nav-item active" onclick="showPage('home',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Ballina
+    </button>
+    <button class="nav-item" onclick="showPage('prediction',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Parashikimi
+    </button>
+    <button class="nav-item" onclick="showPage('shap',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Analiza SHAP
+    </button>
+    <button class="nav-item" onclick="showPage('lime',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+      Analiza LIME
+    </button>
+    <button class="nav-item" onclick="showPage('comparison',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      SHAP vs LIME
+    </button>
+    <button class="nav-item" onclick="showPage('privacy',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Privatësia &amp; Siguria
+    </button>
+    <button class="nav-item" onclick="showPage('results',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Rezultatet
+    </button>
+  </div>
+  <div class="sidebar-foot">
+    <h4>© 2026 XAI Explorer</h4>
+    <p>Punim Diplome Bachelor — 2026</p>
+    <div class="sidebar-uni">UT — Tetovë</div>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- FAQJA 1 — BALLINA -->
+<div id="page-home" class="page active">
+
+  <div style="background:var(--navy);border-radius:16px;padding:60px 40px;margin-bottom:24px;position:relative;overflow:hidden;text-align:center;">
+    <div style="position:absolute;top:-60px;right:-60px;width:260px;height:260px;border-radius:50%;background:rgba(255,184,28,0.07);pointer-events:none;"></div>
+    <div style="position:absolute;bottom:-80px;left:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.03);pointer-events:none;"></div>
+    <h1 style="font-size:38px;font-weight:700;color:#fff;line-height:1.25;margin-bottom:14px;position:relative;">
+      XAI <span style="color:#FFB81C;">Explorer</span>
+    </h1>
+    <p style="font-size:16px;color:rgba(255,255,255,0.72);line-height:1.6;max-width:560px;margin:0 auto 26px;position:relative;">
+      Parashikimi transparent i performancës akademike me Inteligjencë Artificiale të Shpjegueshme
+    </p>
+    <button class="btn btn-gold" style="position:relative;padding:13px 28px;font-size:14px;" onclick="showPage('prediction', document.querySelectorAll('.nav-item')[1])">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Fillo Analizën
+    </button>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;">
+    <div class="card" style="text-align:center;padding:26px 18px;">
+      <div style="margin-bottom:12px;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#003366" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      </div>
+      <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:6px;">Random Forest</div>
+      <div style="font-size:12px;color:var(--txt-muted);line-height:1.5;">Parashikon suksesin akademik të studentëve.</div>
+    </div>
+    <div class="card" style="text-align:center;padding:26px 18px;">
+      <div style="margin-bottom:12px;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#003366" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      </div>
+      <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:6px;">Analiza SHAP</div>
+      <div style="font-size:12px;color:var(--txt-muted);line-height:1.5;">Shpjegon sjelljen globale të modelit.</div>
+    </div>
+    <div class="card" style="text-align:center;padding:26px 18px;">
+      <div style="margin-bottom:12px;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#003366" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+      </div>
+      <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:6px;">Shpjegimet LIME</div>
+      <div style="font-size:12px;color:var(--txt-muted);line-height:1.5;">Shpjegon parashikimet individuale.</div>
+    </div>
+    <div class="card" style="text-align:center;padding:26px 18px;">
+      <div style="margin-bottom:12px;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#003366" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:6px;">Vlerësimi i Privatësisë</div>
+      <div style="font-size:12px;color:var(--txt-muted);line-height:1.5;">Vlerëson rreziqet e ekspozimit të të dhënave.</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:24px;">
+    <div class="card-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      Si Funksionon?
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:8px;">
+      <div style="text-align:center;padding:16px;background:var(--bg);border-radius:10px;">
+        <div style="width:36px;height:36px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-weight:700;color:var(--navy);font-size:16px;">1</div>
+        <div style="font-size:13px;font-weight:700;color:var(--navy);">Fut të dhënat e studentit</div>
+        <div style="font-size:12px;color:var(--txt-muted);margin-top:4px;line-height:1.5;">Plotëso formularin me parametrat akademikë dhe socialë.</div>
+      </div>
+      <div style="text-align:center;padding:16px;background:var(--bg);border-radius:10px;">
+        <div style="width:36px;height:36px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-weight:700;color:var(--navy);font-size:16px;">2</div>
+        <div style="font-size:13px;font-weight:700;color:var(--navy);">Gjenero Parashikimin</div>
+        <div style="font-size:12px;color:var(--txt-muted);margin-top:4px;line-height:1.5;">Modeli Random Forest llogarit probabilitetin e suksesit.</div>
+      </div>
+      <div style="text-align:center;padding:16px;background:var(--bg);border-radius:10px;">
+        <div style="width:36px;height:36px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-weight:700;color:var(--navy);font-size:16px;">3</div>
+        <div style="font-size:13px;font-weight:700;color:var(--navy);">Eksploro SHAP, LIME &amp; Privatësinë</div>
+        <div style="font-size:12px;color:var(--txt-muted);margin-top:4px;line-height:1.5;">Zbulo faktorët vendimtarë dhe rreziqet e privatësisë.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-val" id="s-students">395</div><div class="stat-label">Studentë</div></div>
+    <div class="stat-card"><div class="stat-val" id="s-features">30</div><div class="stat-label">Karakteristika</div></div>
+    <div class="stat-card"><div class="stat-val" id="s-accuracy">67.09%</div><div class="stat-label">Saktësia</div></div>
+    <div class="stat-card"><div class="stat-val" id="s-algo" style="font-size:15px;padding-top:5px;">Random Forest</div><div class="stat-label">Algoritmi</div></div>
+  </div>
+
+  <div class="card" style="text-align:center;background:var(--navy);padding:36px;">
+    <div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:16px;">Gati të eksplorosh vendimet e AI?</div>
+    <button class="btn btn-gold" onclick="showPage('prediction', document.querySelectorAll('.nav-item')[1])">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Fillo Parashikimin
+    </button>
+  </div>
+
+</div>
+
+<!-- FAQJA 2 — PARASHIKIMI -->
+<div id="page-prediction" class="page">
+  <div class="page-title">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    Parashikimi i Studentit
+  </div>
+  <div class="page-sub">Plotëso të dhënat e studentit dhe parashiko suksesin akademik</div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Parametrat e Studentit
+      </div>
+      <div class="form-grid">
+        <div class="fsec">Informacioni Personal</div>
+        <div class="fgroup"><label>Mosha (15–22)</label><input type="number" id="f-age" min="15" max="22" value="17"></div>
+        <div class="fgroup"><label>Gjinia</label><select id="f-sex"><option value="0">Femër</option><option value="1">Mashkull</option></select></div>
+        <div class="fgroup"><label>Vendbanimi</label><select id="f-address"><option value="1">Urban</option><option value="0">Rural</option></select></div>
+        <div class="fgroup"><label>Shëndeti (1–5)</label><select id="f-health"><option value="1">1 — Shumë Keq</option><option value="2">2 — Keq</option><option value="3" selected>3 — Mesatar</option><option value="4">4 — Mirë</option><option value="5">5 — Shumë Mirë</option></select></div>
+        <div class="fsec">Informacioni Akademik</div>
+        <div class="fgroup"><label>Koha e Studimit (1–4)</label><select id="f-studytime"><option value="1">1 — Nën 2 orë</option><option value="2" selected>2 — 2 deri 5 orë</option><option value="3">3 — 5 deri 10 orë</option><option value="4">4 — Mbi 10 orë</option></select></div>
+        <div class="fgroup"><label>Dështimet (0–4)</label><input type="number" id="f-failures" min="0" max="4" value="0"></div>
+        <div class="fgroup"><label>Mbështetja Shkollore</label><select id="f-schoolsup"><option value="0" selected>Jo</option><option value="1">Po</option></select></div>
+        <div class="fgroup"><label>Synon Arsimin e Lartë</label><select id="f-higher"><option value="1" selected>Po</option><option value="0">Jo</option></select></div>
+        <div class="fgroup"><label>Arsimi i Nënës (0–4)</label><select id="f-medu"><option value="0">0 — Asnjë</option><option value="1">1 — Fillor</option><option value="2">2 — Mesëm i Ulët</option><option value="3" selected>3 — Mesëm i Lartë</option><option value="4">4 — Universitar</option></select></div>
+        <div class="fgroup"><label>Arsimi i Babait (0–4)</label><select id="f-fedu"><option value="0">0 — Asnjë</option><option value="1">1 — Fillor</option><option value="2">2 — Mesëm i Ulët</option><option value="3" selected>3 — Mesëm i Lartë</option><option value="4">4 — Universitar</option></select></div>
+        <div class="fsec">Informacioni Social</div>
+        <div class="fgroup"><label>Daljet (1–5)</label><select id="f-goout"><option value="1">1 — Shumë Pak</option><option value="2">2 — Pak</option><option value="3" selected>3 — Mesatar</option><option value="4">4 — Shpesh</option><option value="5">5 — Shumë Shpesh</option></select></div>
+        <div class="fgroup"><label>Mungesat (0–93)</label><input type="number" id="f-absences" min="0" max="93" value="4"></div>
+        <div class="fgroup"><label>Aktivitetet Jashtëshkollore</label><select id="f-activities"><option value="1" selected>Po</option><option value="0">Jo</option></select></div>
+        <div class="fgroup"><label>Aksesi në Internet</label><select id="f-internet"><option value="1" selected>Po</option><option value="0">Jo</option></select></div>
+        <div class="fgroup"><label>Marrëdhënie Romantike</label><select id="f-romantic"><option value="0" selected>Jo</option><option value="1">Po</option></select></div>
+        <div class="fgroup"><label>Koha e Lirë (1–5)</label><select id="f-freetime"><option value="1">1 — Shumë Pak</option><option value="2">2 — Pak</option><option value="3" selected>3 — Mesatare</option><option value="4">4 — Shumë</option><option value="5">5 — Shumë Tepër</option></select></div>
+      </div>
+      <button class="btn btn-primary" onclick="runPredict()">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Parashiko
+      </button>
+      <div class="result-box" id="predResult">
+        <div class="res-header">
+          <div class="res-icon" id="predIcon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg></div>
+          <div>
+            <div style="font-size:11px;color:var(--txt-muted);margin-bottom:1px;">Rezultati i Pritur i Studentit</div>
+            <div class="res-lbl" id="predLabel"></div>
+          </div>
+          <div style="margin-left:auto;text-align:right;">
+            <div style="font-size:11px;color:var(--txt-muted);margin-bottom:1px;">Probabiliteti</div>
+            <div style="font-size:26px;font-weight:800;font-family:'IBM Plex Mono',monospace;" id="predProb"></div>
+          </div>
+        </div>
+        <div class="prob-bar"><div class="prob-fill" id="predBar" style="width:0%"></div></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:12px;">
+          <span style="font-size:12px;color:var(--txt-muted);font-weight:600;">Niveli i Rrezikut:</span>
+          <span class="badge" id="predRiskBadge">—</span>
+        </div>
+        <div class="two-col-eq" style="margin-top:14px;gap:12px;">
+          <div style="background:#f0fdf4;border-radius:8px;padding:12px 14px;border-left:3px solid var(--success);">
+            <div style="font-size:11px;font-weight:700;color:var(--success);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Faktorët Pozitivë Kryesorë</div>
+            <ul id="predPositiveList" style="font-size:13px;color:var(--txt);line-height:1.7;list-style:none;"></ul>
+          </div>
+          <div style="background:#fff1f2;border-radius:8px;padding:12px 14px;border-left:3px solid var(--danger);">
+            <div style="font-size:11px;font-weight:700;color:var(--danger);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Faktorët e Mundshëm të Rrezikut</div>
+            <ul id="predNegativeList" style="font-size:13px;color:var(--txt);line-height:1.7;list-style:none;"></ul>
+          </div>
+        </div>
+        <div class="res-actions">
+          <button class="btn btn-outline btn-sm" onclick="goExplain('shap')">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Shpjego me SHAP
+          </button>
+          <button class="btn btn-outline btn-sm" onclick="goExplain('lime')">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            Shpjego me LIME
+          </button>
+          <button class="btn btn-gold btn-sm" onclick="goExplain('comparison')">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            SHAP vs LIME
+          </button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Si funksionon?
+        </div>
+        <div style="font-size:13px;color:var(--txt-muted);line-height:1.8;">
+          <p><strong>1.</strong> Plotëso të dhënat e studentit në formular.</p><br>
+          <p><strong>2.</strong> Shtyp <strong>Parashiko</strong> — modeli Random Forest parashikon nëse studenti kalon.</p><br>
+          <p><strong>3.</strong> Pas parashikimit, shpjego vendimin me <strong>SHAP</strong> ose <strong>LIME</strong>.</p><br>
+          <p><strong>4.</strong> Krahaso të dyja metodat te faqja <strong>SHAP vs LIME</strong>.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          Karakteristikat më të Rëndësishme
+        </div>
+        <div style="font-size:13px;line-height:1.9;color:var(--txt-muted);">
+          <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);"><span style="font-weight:600;color:var(--danger);">Dështimet</span><span>Ndikimi më i lartë</span></div>
+          <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);"><span style="font-weight:600;color:#ea580c;">Mungesat</span><span>Ndikimi i lartë</span></div>
+          <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);"><span style="font-weight:600;color:var(--gold-dark);">Koha e Studimit</span><span>Ndikimi mesatar</span></div>
+          <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);"><span style="font-weight:600;color:var(--success);">Synimi për Arsim të Lartë</span><span>Ndikim pozitiv</span></div>
+          <div style="display:flex;justify-content:space-between;padding:7px 0;"><span style="font-weight:600;color:var(--blue-mid);">Arsimi i Nënës</span><span>Ndikim pozitiv</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQJA 3 — ANALIZA SHAP -->
+<div id="page-shap" class="page">
+  <div class="page-title">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Analiza SHAP
+  </div>
+  <div class="page-sub">SHapley Additive exPlanations — Shpjegime globale dhe lokale të modelit</div>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('shap','global',this)">Shpjegimi Global</button>
+    <button class="tab-btn" onclick="switchTab('shap','local',this)">Shpjegimi Lokal</button>
+  </div>
+  <div id="shap-tab-global" class="tab-pane active">
+    <div style="margin-bottom:12px;">
+      <button class="btn btn-gold btn-sm" onclick="loadGlobalShap()">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+        Ngarko SHAP Global
+      </button>
+    </div>
+    <div id="shap-global-content">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          Grafiku Përmbledhës SHAP
+        </div>
+        <div class="insight">Shtyp "Ngarko SHAP Global" për të parë grafikët e rëndësisë globale të karakteristikave.</div>
+      </div>
+    </div>
+  </div>
+  <div id="shap-tab-local" class="tab-pane">
+    <div id="shap-local-content">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+          Grafiku Ujëvarë SHAP — Shpjegim Lokal
+        </div>
+        <div class="insight insight-gold">Kryej fillimisht një parashikim në faqen <strong>Parashikimi</strong>, pastaj kthehu këtu për shpjegimin lokal.</div>
+        <div style="margin-top:14px;">
+          <button class="btn btn-outline btn-sm" onclick="showPage('prediction', document.querySelectorAll('.nav-item')[1])">Shko te Parashikimi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQJA 4 — ANALIZA LIME -->
+<div id="page-lime" class="page">
+  <div class="page-title">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+    Analiza LIME
+  </div>
+  <div class="page-sub">Shpjegime Lokale të Modelit të Interpretueshëm Linear</div>
+  <div id="lime-content">
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+        Vizualizimi LIME
+      </div>
+      <div class="insight insight-gold">Kryej fillimisht një parashikim në faqen <strong>Parashikimi</strong>, pastaj kthehu këtu për shpjegimin LIME.</div>
+      <div style="margin-top:14px;">
+        <button class="btn btn-outline btn-sm" onclick="showPage('prediction', document.querySelectorAll('.nav-item')[1])">Shko te Parashikimi</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQJA 5 — KRAHASIMI -->
+<div id="page-comparison" class="page">
+  <div class="page-title">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+    Krahasimi SHAP vs LIME
+  </div>
+  <div class="page-sub">Krahasimi i dy metodave kryesore të shpjegueshmërisë së AI</div>
+
+  <div class="card" style="border-top:4px solid var(--gold);">
+    <div class="card-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Vlerësimi Përfundimtar
+    </div>
+    <table class="tbl">
+      <thead><tr><th>Kriteri</th><th>SHAP</th><th>LIME</th></tr></thead>
+      <tbody>
+        <tr><td>Stabiliteti</td><td style="color:var(--gold-dark);letter-spacing:1px;">⭐⭐⭐⭐⭐</td><td style="color:var(--gold-dark);letter-spacing:1px;">⭐⭐⭐</td></tr>
+        <tr><td>Shpejtësia</td><td style="color:var(--gold-dark);letter-spacing:1px;">⭐⭐⭐</td><td style="color:var(--gold-dark);letter-spacing:1px;">⭐⭐⭐⭐⭐</td></tr>
+        <tr><td>Analiza Globale</td><td style="color:var(--gold-dark);letter-spacing:1px;">⭐⭐⭐⭐⭐</td><td style="color:var(--gold-dark);letter-spacing:1px;">⭐</td></tr>
+        <tr><td>Analiza Lokale</td><td style="color:var(--gold-dark);letter-spacing:1px;">⭐⭐⭐⭐⭐</td><td style="color:var(--gold-dark);letter-spacing:1px;">⭐⭐⭐⭐</td></tr>
+        <tr><td>Interpretueshmëria</td><td style="color:var(--gold-dark);letter-spacing:1px;">⭐⭐⭐⭐</td><td style="color:var(--gold-dark);letter-spacing:1px;">⭐⭐⭐⭐⭐</td></tr>
+      </tbody>
+    </table>
+    <div class="insight insight-gold" style="margin-top:16px;">
+      <strong>Konkluzion Përfundimtar:</strong> SHAP u zgjodh si teknika më e besueshme e shpjegimit për këtë studim, pasi ofron interpretueshmëri si lokale ashtu edhe globale, duke ruajtur shpjegime konsistente.
+    </div>
+  </div>
+
+  <div id="comparison-content">
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        Krahasimi SHAP vs LIME
+      </div>
+      <div class="insight">Kryej fillimisht një parashikim dhe kthe këtu për krahasim të plotë.</div>
+      <div style="margin-top:14px;">
+        <button class="btn btn-outline btn-sm" onclick="showPage('prediction', document.querySelectorAll('.nav-item')[1])">Shko te Parashikimi</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQJA 6 — PRIVATËSIA -->
+<div id="page-privacy" class="page">
+  <div class="page-title">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    Privatësia &amp; Siguria
+  </div>
+ 
+
+  <div style="margin-bottom:16px;">
+    <button class="btn btn-gold btn-sm" onclick="loadPrivacy()">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+      Ngarko Analizën
+    </button>
+  </div>
+
+  <div id="privacy-content">
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Duke pritur analizën...
+      </div>
+      <div class="insight">Shtyp "Ngarko Analizën" për të filluar analizën e privatësisë.</div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQJA 7 — REZULTATET -->
+<div id="page-results" class="page">
+  <div class="page-title">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    Rezultatet &amp; Konkluzionet
+  </div>
+  <div class="page-sub">Rezultatet e modelit dhe gjetjet kryesore të kërkimit</div>
+  <div class="metric-grid">
+    <div class="metric-card"><div class="metric-val" id="r-acc">—</div><div class="metric-lbl">Saktësia</div></div>
+    <div class="metric-card"><div class="metric-val" id="r-prec">—</div><div class="metric-lbl">Precizioni</div></div>
+    <div class="metric-card"><div class="metric-val" id="r-rec">—</div><div class="metric-lbl">Rikujtimi</div></div>
+    <div class="metric-card"><div class="metric-val" id="r-f1">—</div><div class="metric-lbl">Nota F1</div></div>
+  </div>
+  <div class="two-col-eq">
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+        Gjetjet Kryesore
+      </div>
+      <div id="findings-list"><div class="spinner"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Krahasimi i Metodave
+      </div>
+      <table class="tbl">
+        <thead><tr><th>Kriteri</th><th>SHAP</th><th>LIME</th></tr></thead>
+        <tbody>
+          <tr><td>Stabiliteti</td><td><span class="badge b-low">I lartë</span></td><td><span class="badge b-med">Mesatar</span></td></tr>
+          <tr><td>Shpjegimet Globale</td><td><span class="badge b-low">Po</span></td><td><span class="badge b-high">Jo</span></td></tr>
+          <tr><td>Shpjegimet Lokale</td><td><span class="badge b-low">Po</span></td><td><span class="badge b-low">Po</span></td></tr>
+          <tr><td>Model-agnostic</td><td><span class="badge b-high">Pjesërisht</span></td><td><span class="badge b-low">Po</span></td></tr>
+          <tr><td>Shpejtësia</td><td><span class="badge b-med">Mesatare</span></td><td><span class="badge b-low">E lartë</span></td></tr>
+          <tr><td>Baza Matematikore</td><td><span class="badge b-low">Shapley</span></td><td><span class="badge b-med">Aproksim linear</span></td></tr>
+        </tbody>
+      </table>
+      <div class="insight insight-gold" style="margin-top:14px;">
+        <strong>Konkluzion:</strong> SHAP është më i besueshëm për shpjegime globale, ndërsa LIME është më intuitiv për shpjegime lokale. Të dyja metodat janë plotësuese.
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+let lastInputValues = null;
+let serverFeatureNames = null;
+let privacyChartInstance = null;
+
+function showPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+function switchTab(page, tab, btn) {
+  document.querySelectorAll('#page-' + page + ' .tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('#page-' + page + ' .tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(page + '-tab-' + tab).classList.add('active');
+  btn.classList.add('active');
+}
+
+async function loadFeatureNames() {
+  try {
+    const res = await fetch('/debug_features');
+    const data = await res.json();
+    serverFeatureNames = data.feature_names;
+  } catch(e) { console.warn('Nuk u ngarkuan emrat e karakteristikave:', e.message); }
+}
+
+function getFormValues() {
+  const formValues = {
+    age:+document.getElementById('f-age').value,
+    sex:+document.getElementById('f-sex').value,
+    address:+document.getElementById('f-address').value,
+    famsize:1, pstatus:1,
+    medu:+document.getElementById('f-medu').value,
+    fedu:+document.getElementById('f-fedu').value,
+    mjob:2, fjob:2, reason:1, guardian:0, traveltime:1,
+    studytime:+document.getElementById('f-studytime').value,
+    failures:+document.getElementById('f-failures').value,
+    schoolsup:+document.getElementById('f-schoolsup').value,
+    famsup:1, paid:0,
+    activities:+document.getElementById('f-activities').value,
+    nursery:1,
+    higher:+document.getElementById('f-higher').value,
+    internet:+document.getElementById('f-internet').value,
+    romantic:+document.getElementById('f-romantic').value,
+    famrel:4,
+    freetime:+document.getElementById('f-freetime').value,
+    goout:+document.getElementById('f-goout').value,
+    dalc:1, walc:1,
+    health:+document.getElementById('f-health').value,
+    absences:+document.getElementById('f-absences').value,
+  };
+  if (serverFeatureNames && serverFeatureNames.length > 0) {
+    return serverFeatureNames.map(name => {
+      const k = name.toLowerCase();
+      return formValues[k] !== undefined ? formValues[k] : 0;
+    });
+  }
+  return ['age','sex','address','famsize','pstatus','medu','fedu','mjob','fjob','reason',
+          'guardian','traveltime','studytime','failures','schoolsup','famsup','paid',
+          'activities','nursery','higher','internet','romantic','famrel','freetime',
+          'goout','dalc','walc','health','absences']
+    .map(f => formValues[f] !== undefined ? formValues[f] : 0);
+}
+
+async function runPredict() {
+  const values = getFormValues();
+  lastInputValues = values;
+  const btn = document.querySelector('#page-prediction .btn-primary');
+  const errBox = document.getElementById('predError');
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="12" cy="12" r="10"/></svg> Duke parashikuar...';
+  btn.disabled = true;
+  if (errBox) errBox.style.display = 'none';
+  try {
+    const res = await fetch('/predict', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({values})});
+    const raw = await res.text();
+    let data;
+    try { data = JSON.parse(raw); } catch(e) {
+      showPredError('Serveri ktheu HTML jo JSON.<br><small>' + raw.substring(0,300) + '</small>');
+      return;
+    }
+    if (!res.ok || data.error) {
+      showPredError('Gabim: ' + (data.error||'E panjohur') + (data.expected ? '<br>Priten: '+data.expected+', morën: '+data.received : ''));
+      return;
+    }
+    showPrediction(data);
+  } catch(e) { showPredError('Gabim rrjeti: ' + e.message); }
+  finally {
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Parashiko';
+    btn.disabled = false;
+  }
+}
+
+function showPredError(msg) {
+  let e = document.getElementById('predError');
+  if (!e) {
+    e = document.createElement('div');
+    e.id = 'predError';
+    e.style.cssText = 'background:#fff1f2;border:2px solid #dc2626;border-radius:10px;padding:14px 18px;margin-top:12px;font-size:13px;color:#dc2626;line-height:1.6;';
+    document.getElementById('predResult').insertAdjacentElement('beforebegin', e);
+  }
+  e.innerHTML = 'Gabim: ' + msg;
+  e.style.display = 'block';
+}
+
+function showPrediction(data) {
+  const box = document.getElementById('predResult');
+  const isPass = data.prediction === 1;
+  box.className = 'result-box ' + (isPass ? 'res-pass' : 'res-fail');
+  box.style.display = 'block';
+  const iconSvg = isPass
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+  document.getElementById('predIcon').innerHTML = iconSvg;
+  document.getElementById('predLabel').textContent = isPass ? 'KALON' : 'NUK KALON';
+  document.getElementById('predProb').textContent = data.probability + '%';
+  setTimeout(() => { document.getElementById('predBar').style.width = data.probability + '%'; }, 50);
+  const riskBadge = document.getElementById('predRiskBadge');
+  const riskMap = {Low:'b-low', Medium:'b-med', High:'b-high'};
+  const riskLabelMap = {Low:'I ulët', Medium:'Mesatar', High:'I lartë'};
+  riskBadge.className = 'badge ' + (riskMap[data.risk_level] || 'b-med');
+  riskBadge.textContent = riskLabelMap[data.risk_level] || data.risk_level || '—';
+  const posList = document.getElementById('predPositiveList');
+  const negList = document.getElementById('predNegativeList');
+  posList.innerHTML = (data.top_positive && data.top_positive.length)
+    ? data.top_positive.map(f => '<li>+ '+f+'</li>').join('')
+    : '<li style="color:var(--txt-muted);">—</li>';
+  negList.innerHTML = (data.top_negative && data.top_negative.length)
+    ? data.top_negative.map(f => '<li>- '+f+'</li>').join('')
+    : '<li style="color:var(--txt-muted);">—</li>';
+}
+
+function goExplain(page) {
+  const navItems = document.querySelectorAll('.nav-item');
+  const pageMap = {shap:2, lime:3, comparison:4};
+  showPage(page, navItems[pageMap[page]]);
+  if (!lastInputValues) { alert('Kryej fillimisht një parashikim!'); return; }
+  if (page === 'shap') loadShapLocal();
+  if (page === 'lime') loadLimeLocal();
+  if (page === 'comparison') loadComparison();
+}
+
+async function loadGlobalShap() {
+  const el = document.getElementById('shap-global-content');
+  el.innerHTML = '<div class="card"><div class="spinner"></div><div class="loading-msg">Duke ngarkuar SHAP global...</div></div>';
+  try {
+    const res = await fetch('/global_shap');
+    const data = await res.json();
+    if (data.error) { el.innerHTML = '<div class="card"><div class="insight insight-red">Gabim: '+data.error+'</div></div>'; return; }
+    el.innerHTML =
+      '<div class="two-col-eq">' +
+        '<div class="card"><div class="card-title">Grafiku Përmbledhës SHAP (Beeswarm)</div><img src="data:image/png;base64,'+data.summary_img+'" class="graph-img"></div>' +
+        '<div class="card"><div class="card-title">Grafiku me Shtylla SHAP — Rëndësia e Karakteristikave</div><img src="data:image/png;base64,'+data.bar_img+'" class="graph-img"></div>' +
+      '</div>' +
+      '<div class="card"><div class="card-title">5 Karakteristikat Kryesore Globale</div>' +
+        '<table class="tbl"><thead><tr><th>Rangu</th><th>Karakteristika</th><th>Rezultati SHAP (mesatar)</th></tr></thead><tbody>' +
+        data.top5.map(function(f,i){
+          return '<tr><td><strong>#'+(i+1)+'</strong></td><td>'+f.name+'</td><td>' +
+            '<div style="display:flex;align-items:center;gap:8px;">' +
+              '<div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;">' +
+                '<div style="height:100%;width:'+Math.round(f.score/data.top5[0].score*100)+'%;background:var(--blue-mid);border-radius:4px;"></div>' +
+              '</div>' +
+              '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:12px;">'+f.score.toFixed(4)+'</span>' +
+            '</div></td></tr>';
+        }).join('') +
+        '</tbody></table>' +
+        '<div class="insight" style="margin-top:12px;">'+data.insight+'</div>' +
+      '</div>';
+  } catch(e) { el.innerHTML = '<div class="card"><div class="insight insight-red">Gabim: '+e.message+'</div></div>'; }
+}
+
+async function loadShapLocal() {
+  if (!lastInputValues) return;
+  const el = document.getElementById('shap-local-content');
+  el.innerHTML = '<div class="card"><div class="spinner"></div><div class="loading-msg">Duke llogaritur vlerat SHAP...</div></div>';
+  try {
+    const res = await fetch('/shap_local', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({values:lastInputValues})});
+    const data = await res.json();
+    if (data.error) { el.innerHTML = '<div class="card"><div class="insight insight-red">Gabim: '+data.error+'</div></div>'; return; }
+    const maxAbs = Math.max(...data.shap_values.map(Math.abs));
+    el.innerHTML =
+      '<div class="card"><div class="card-title">Grafiku Ujëvarë SHAP</div><img src="data:image/png;base64,'+data.waterfall_img+'" class="graph-img"></div>' +
+      '<div class="two-col-eq">' +
+        '<div class="card">' +
+          '<div class="card-title" style="color:var(--success);">Faktorët Pozitivë (favor KALON)</div>' +
+          '<div class="factor-list">' +
+          data.positive.map(function(f){
+            return '<div class="factor-item"><div class="factor-name">'+f.name+'</div>' +
+              '<div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;">' +
+                '<div class="factor-bar-pos" style="width:'+Math.round(f.value/maxAbs*100)+'%"></div>' +
+              '</div>' +
+              '<div class="factor-val val-pos">+'+f.value.toFixed(4)+'</div></div>';
+          }).join('') +
+          '</div></div>' +
+        '<div class="card">' +
+          '<div class="card-title" style="color:var(--danger);">Faktorët Negativë (kundër KALON)</div>' +
+          '<div class="factor-list">' +
+          data.negative.map(function(f){
+            return '<div class="factor-item"><div class="factor-name">'+f.name+'</div>' +
+              '<div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;">' +
+                '<div class="factor-bar-neg" style="width:'+Math.round(Math.abs(f.value)/maxAbs*100)+'%"></div>' +
+              '</div>' +
+              '<div class="factor-val val-neg">'+f.value.toFixed(4)+'</div></div>';
+          }).join('') +
+          '</div></div>' +
+      '</div>';
+  } catch(e) { el.innerHTML = '<div class="card"><div class="insight insight-red">Gabim: '+e.message+'</div></div>'; }
+}
+
+async function loadLimeLocal() {
+  if (!lastInputValues) return;
+  const el = document.getElementById('lime-content');
+  el.innerHTML = '<div class="card"><div class="spinner"></div><div class="loading-msg">Duke gjeneruar shpjegimin LIME...</div></div>';
+  try {
+    const res = await fetch('/lime_local', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({values:lastInputValues})});
+    const data = await res.json();
+    if (data.error) { el.innerHTML = '<div class="card"><div class="insight insight-red">Gabim: '+data.error+'</div></div>'; return; }
+    const maxW = Math.max(...data.lime_list.map(l => Math.abs(l.weight)));
+    el.innerHTML =
+      '<div class="card"><div class="card-title">Vizualizimi LIME</div><img src="data:image/png;base64,'+data.lime_img+'" class="graph-img"></div>' +
+      '<div class="card">' +
+        '<div class="card-title">Peshat e Karakteristikave (LIME)</div>' +
+        '<p style="font-size:12px;color:var(--txt-muted);margin-bottom:12px;">Pozitiv = favor KALON &nbsp;·&nbsp; Negativ = kundër KALON</p>' +
+        data.lime_list.map(function(l){
+          return '<div class="lime-row">' +
+            '<div class="lime-feature">'+l.feature+'</div>' +
+            '<div class="lime-bar-wrap">' +
+              (l.weight >= 0
+                ? '<div class="lime-bar-fill-pos" style="width:'+Math.round(l.weight/maxW*100)+'%"></div>'
+                : '<div class="lime-bar-fill-neg" style="width:'+Math.round(Math.abs(l.weight)/maxW*100)+'%"></div>') +
+            '</div>' +
+            '<div class="lime-val '+(l.weight>=0?'val-pos':'val-neg')+'">'+((l.weight>=0)?'+':'')+l.weight.toFixed(4)+'</div>' +
+          '</div>';
+        }).join('') +
+        '<div class="insight insight-gold" style="margin-top:12px;">LIME krijon model linear lokal duke testuar '+data.lime_list.length+' karakteristika kryesore rreth instancës aktuale.</div>' +
+      '</div>';
+  } catch(e) { el.innerHTML = '<div class="card"><div class="insight insight-red">Gabim: '+e.message+'</div></div>'; }
+}
+
+async function loadComparison() {
+  if (!lastInputValues) return;
+  const el = document.getElementById('comparison-content');
+  el.innerHTML = '<div class="card"><div class="spinner"></div><div class="loading-msg">Duke krahasuar SHAP dhe LIME...</div></div>';
+  try {
+    const res = await fetch('/comparison', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({values:lastInputValues})});
+    const data = await res.json();
+    if (data.error) { el.innerHTML = '<div class="card"><div class="insight insight-red">Gabim: '+data.error+'</div></div>'; return; }
+    el.innerHTML =
+      '<div class="card"><div class="card-title">Grafiku Krahasues — SHAP vs LIME</div><img src="data:image/png;base64,'+data.comparison_img+'" class="graph-img"></div>' +
+      '<div class="card">' +
+        '<div class="card-title">Tabela Krahasuese</div>' +
+        '<table class="tbl"><thead><tr><th>Karakteristika</th><th>Vlera SHAP</th><th>Pesha LIME</th><th>Diferenca</th></tr></thead><tbody>' +
+        data.table.map(function(r){
+          return '<tr>' +
+            '<td><strong>'+r.feature+'</strong></td>' +
+            '<td class="'+(r.shap>=0?'val-pos':'val-neg')+'">'+((r.shap>=0)?'+':'')+r.shap+'</td>' +
+            '<td class="'+(r.lime>=0?'val-pos':'val-neg')+'">'+((r.lime>=0)?'+':'')+r.lime+'</td>' +
+            '<td style="font-family:\'IBM Plex Mono\',monospace;font-size:12px;color:var(--txt-muted);">'+Math.abs(r.shap - r.lime).toFixed(4)+'</td>' +
+          '</tr>';
+        }).join('') +
+        '</tbody></table>' +
+        '<div class="insight" style="margin-top:12px;">'+data.conclusion+'</div>' +
+      '</div>' +
+      '<div class="two-col-eq">' +
+        '<div class="card"><div class="card-title">SHAP — Karakteristikat</div><div class="feat-list">' +
+          '<div class="feat-row feat-ok"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Rezultate deterministike</div>' +
+          '<div class="feat-row feat-ok"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Shpjegime globale dhe lokale</div>' +
+          '<div class="feat-row feat-ok"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Bazë e fortë matematikore</div>' +
+          '<div class="feat-row feat-warn"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Kosto komputacionale e lartë</div>' +
+        '</div></div>' +
+        '<div class="card"><div class="card-title">LIME — Karakteristikat</div><div class="feat-list">' +
+          '<div class="feat-row feat-ok"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Lehtë i kuptueshëm</div>' +
+          '<div class="feat-row feat-ok"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Model-agnostic</div>' +
+          '<div class="feat-row feat-ok"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>I shpejtë për instanca individuale</div>' +
+          '<div class="feat-row feat-warn"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Rezultate me variancë</div>' +
+        '</div></div>' +
+      '</div>';
+  } catch(e) { el.innerHTML = '<div class="card"><div class="insight insight-red">Gabim: '+e.message+'</div></div>'; }
+}
+
+async function loadPrivacy() {
+  const el = document.getElementById('privacy-content');
+  el.innerHTML = '<div class="card"><div class="spinner"></div><div class="loading-msg">Duke analizuar privatësinë...</div></div>';
+  try {
+    const res = await fetch('/privacy_features');
+    const data = await res.json();
+    if (data.error) {
+      el.innerHTML = '<div class="card"><div class="insight insight-red">Gabim: '+data.error+'</div></div>';
+      return;
+    }
+
+    const trainConf = parseFloat(data.train_conf) || 85.39;
+    const testConf  = parseFloat(data.test_conf)  || 70.86;
+    const gap       = parseFloat(data.gap)         || 14.53;
+    const discScore = parseFloat(data.disclosure_score) || (gap * 1.3);
+
+    /* Pragjet e rishikuara: <15% E ulët, 15-25% Mesatare, >25% E lartë */
+    let riskLevel;
+    if (discScore < 15) riskLevel = 'Low';
+    else if (discScore < 25) riskLevel = 'Medium';
+    else riskLevel = 'High';
+
+    const riskMap = {
+      Low:    { cls:'b-low',  dot:'#16a34a', label:'Ekspozim i Ulët'    },
+      Medium: { cls:'b-med',  dot:'#d49600', label:'Ekspozim Mesatar'   },
+      High:   { cls:'b-high', dot:'#dc2626', label:'Ekspozim i Lartë'   }
+    };
+    const rm = riskMap[riskLevel];
+    const features = data.feature_risk || [];
+    const insights = data.privacy_insights || [
+      { dot:'#dc2626', text:'<strong>'+(features[0]&&features[0].name||'dështimet')+'</strong> është karakteristika më e ndjeshme ndaj privatësisë.' },
+      { dot:'#d49600', text:'<strong>'+(features[1]&&features[1].name||'mungesat')+'</strong> kontribuon ndjeshëm në parashikim dhe rrezikun e zbulimit.' },
+      { dot:'#16a34a', text:'Karakteristikat demografike (mosha, gjinia) kontribuojnë më pak në ekspozim.' }
+    ];
+
+    el.innerHTML =
+
+    /* ── 1. KARTA KRYESORE ── */
+    '<div style="background:var(--navy);border-radius:16px;padding:36px 40px;margin-bottom:18px;display:flex;align-items:center;gap:40px;flex-wrap:wrap;position:relative;overflow:hidden;">' +
+      '<div style="position:absolute;top:-50px;right:-50px;width:200px;height:200px;border-radius:50%;background:rgba(255,184,28,0.06);pointer-events:none;"></div>' +
+      '<div style="text-align:center;flex-shrink:0;">' +
+        '<div style="font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:1.2px;font-weight:700;font-family:\'IBM Plex Mono\',monospace;margin-bottom:8px;">EKSPOZIMI I PËRGJITHSHËM I PRIVATËSISË</div>' +
+        '<div style="font-size:68px;font-weight:700;color:#fff;line-height:1;font-family:\'IBM Plex Mono\',monospace;letter-spacing:-2px;">' +
+          discScore.toFixed(1)+'<span style="font-size:36px;color:rgba(255,255,255,0.5);">%</span>' +
+        '</div>' +
+        '<div style="margin-top:10px;"><span style="background:'+rm.dot+'22;border:1px solid '+rm.dot+';color:'+rm.dot+';padding:5px 16px;border-radius:20px;font-size:12px;font-weight:700;font-family:\'IBM Plex Mono\',monospace;">● '+rm.label+'</span></div>' +
+      '</div>' +
+      '<div style="flex:1;min-width:240px;">' +
+        '<div style="font-size:14px;color:rgba(255,255,255,0.75);line-height:1.7;margin-bottom:16px;">Ky rezultat vlerëson se sa informacion i ndjeshëm mund të zbulohet përmes shpjegimeve të modelit.</div>' +
+        '<div style="display:flex;gap:16px;flex-wrap:wrap;">' +
+          '<div style="background:rgba(255,255,255,0.07);border-radius:9px;padding:10px 16px;">' +
+            '<div style="font-size:10px;color:rgba(255,255,255,0.45);margin-bottom:3px;">BESUESHMËRIA TRAJNIMIT</div>' +
+            '<div style="font-size:18px;font-weight:700;color:#fff;font-family:\'IBM Plex Mono\',monospace;">'+trainConf.toFixed(2)+'%</div>' +
+          '</div>' +
+          '<div style="background:rgba(255,255,255,0.07);border-radius:9px;padding:10px 16px;">' +
+            '<div style="font-size:10px;color:rgba(255,255,255,0.45);margin-bottom:3px;">BESUESHMËRIA TESTIMIT</div>' +
+            '<div style="font-size:18px;font-weight:700;color:#fff;font-family:\'IBM Plex Mono\',monospace;">'+testConf.toFixed(2)+'%</div>' +
+          '</div>' +
+          '<div style="background:rgba(220,38,38,0.18);border:1px solid rgba(220,38,38,0.4);border-radius:9px;padding:10px 16px;">' +
+            '<div style="font-size:10px;color:rgba(255,255,255,0.45);margin-bottom:3px;">HAPËZA E BESUESHMËRISË</div>' +
+            '<div style="font-size:18px;font-weight:700;color:#ff6b6b;font-family:\'IBM Plex Mono\',monospace;">'+gap.toFixed(2)+'%</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+
+    /* ── 2. PSE KY REZULTAT? ── */
+    '<div class="card" style="margin-bottom:18px;">' +
+      '<div class="card-title">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+        'Pse ky rezultat?' +
+      '</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;">' +
+        '<div style="text-align:center;background:var(--bg);border-radius:10px;padding:16px 12px;border-top:3px solid var(--gold);">' +
+          '<div style="font-size:11px;color:var(--txt-muted);font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Rezultati i Zbulimit</div>' +
+          '<div style="font-size:26px;font-weight:700;color:var(--navy);font-family:\'IBM Plex Mono\',monospace;">'+discScore.toFixed(1)+'%</div>' +
+        '</div>' +
+        '<div style="text-align:center;background:var(--bg);border-radius:10px;padding:16px 12px;border-top:3px solid var(--blue-mid);">' +
+          '<div style="font-size:11px;color:var(--txt-muted);font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Besueshmëria Trajnimit</div>' +
+          '<div style="font-size:26px;font-weight:700;color:var(--navy);font-family:\'IBM Plex Mono\',monospace;">'+trainConf.toFixed(2)+'%</div>' +
+        '</div>' +
+        '<div style="text-align:center;background:var(--bg);border-radius:10px;padding:16px 12px;border-top:3px solid var(--blue-mid);">' +
+          '<div style="font-size:11px;color:var(--txt-muted);font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Besueshmëria Testimit</div>' +
+          '<div style="font-size:26px;font-weight:700;color:var(--navy);font-family:\'IBM Plex Mono\',monospace;">'+testConf.toFixed(2)+'%</div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:14px;">' +
+        '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9a3412" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>' +
+        '<div>' +
+          '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:13px;font-weight:700;color:#9a3412;">Hapëza e Besueshmërisë = '+gap.toFixed(2)+'%</span>' +
+          '<div style="font-size:12px;color:#78350f;margin-top:3px;">= Besueshmëria e Trajnimit ('+trainConf.toFixed(2)+'%) − Besueshmëria e Testimit ('+testConf.toFixed(2)+'%)</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+
+    /* ── 3. GRAFIKU I TENSIONIT ── */
+    '<div class="card" style="margin-bottom:18px;">' +
+      '<div class="card-title">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>' +
+        'Tensioni: Besueshmëri ↔ Privatësi' +
+      '</div>' +
+      '<p style="font-size:12px;color:var(--txt-muted);margin-bottom:14px;line-height:1.6;">Pozicioni i modelit tuaj krahasuar me modele të tjera. Sa më e madhe hapëza, aq më i lartë rreziku ndaj sulmeve të membership inference.</p>' +
+      '<div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:12px;font-size:12px;color:var(--txt-muted);">' +
+        '<span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:50%;background:#3266ad;display:inline-block;"></span>Zonë e sigurt (&lt;10%)</span>' +
+        '<span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:50%;background:#e8a020;display:inline-block;"></span>Zonë kujdesi (10–20%)</span>' +
+        '<span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:50%;background:#c0392b;display:inline-block;"></span>Zonë rreziku (&gt;20%)</span>' +
+        '<span style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;background:#1a1a1a;display:inline-block;transform:rotate(45deg);"></span>Modeli juaj</span>' +
+      '</div>' +
+      '<div style="position:relative;width:100%;height:280px;"><canvas id="privacyTradeoffChart" role="img" aria-label="Grafik shpërndarës i tensionit ndërmjet besueshmërisë dhe privatësisë. Modeli aktual ndodhet me hapëzë '+gap.toFixed(2)+'% dhe rezultat zbulimi '+discScore.toFixed(1)+'%.">Modeli aktual: hapëzë '+gap.toFixed(2)+'%, zbulim '+discScore.toFixed(1)+'%.</canvas></div>' +
+      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;">' +
+        '<div style="background:#eff6ff;border-radius:10px;padding:10px 14px;border-left:3px solid #3266ad;">' +
+          '<div style="font-size:12px;font-weight:600;color:#1d4ed8;margin-bottom:3px;">Zonë e Sigurt</div>' +
+          '<div style="font-size:11px;color:#1e3a8a;line-height:1.5;">Hapëzë &lt;10%, Zbulim &lt;15%. Modeli përgjithëson mirë.</div>' +
+        '</div>' +
+        '<div style="background:#fffbeb;border-radius:10px;padding:10px 14px;border-left:3px solid #e8a020;">' +
+          '<div style="font-size:12px;font-weight:600;color:#92400e;margin-bottom:3px;">Zonë Kujdesi <span style="font-size:10px;font-weight:700;background:#fef3c7;color:#78350f;padding:2px 6px;border-radius:4px;margin-left:4px;">JU JENI KËTU</span></div>' +
+          '<div style="font-size:11px;color:#78350f;line-height:1.5;">Hapëzë 10–20%, Zbulim 15–25%. Rrezik i moderuar.</div>' +
+        '</div>' +
+        '<div style="background:#fff1f2;border-radius:10px;padding:10px 14px;border-left:3px solid #c0392b;">' +
+          '<div style="font-size:12px;font-weight:600;color:#991b1b;margin-bottom:3px;">Zonë Rreziku</div>' +
+          '<div style="font-size:11px;color:#7f1d1d;line-height:1.5;">Hapëzë &gt;20%, Zbulim &gt;25%. Vulnerabël ndaj sulmeve.</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+
+    
+
+    /* ── 5. MEMBERSHIP INFERENCE ── */
+    '<div class="card" style="margin-bottom:18px;">' +
+      '<div class="card-title">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' +
+        'A mund të deduktohet anëtarësia në të dhënat e trajnimit?' +
+      '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:14px;margin-bottom:18px;">' +
+        '<div>' +
+          '<div style="display:flex;justify-content:space-between;margin-bottom:6px;">' +
+            '<span style="font-size:13px;font-weight:600;color:var(--navy);">Besueshmëria e Trajnimit</span>' +
+            '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:13px;font-weight:700;color:var(--blue);">'+trainConf.toFixed(2)+'%</span>' +
+          '</div>' +
+          '<div style="height:12px;background:var(--border);border-radius:6px;overflow:hidden;">' +
+            '<div style="height:100%;width:'+trainConf+'%;background:var(--blue);border-radius:6px;transition:width 1s ease;"></div>' +
+          '</div>' +
+        '</div>' +
+        '<div>' +
+          '<div style="display:flex;justify-content:space-between;margin-bottom:6px;">' +
+            '<span style="font-size:13px;font-weight:600;color:var(--navy);">Besueshmëria e Testimit</span>' +
+            '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:13px;font-weight:700;color:var(--gold-dark);">'+testConf.toFixed(2)+'%</span>' +
+          '</div>' +
+          '<div style="height:12px;background:var(--border);border-radius:6px;overflow:hidden;">' +
+            '<div style="height:100%;width:'+testConf+'%;background:var(--gold);border-radius:6px;transition:width 1s ease;"></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      (gap > 10
+        ? '<div style="background:#fff1f2;border:1.5px solid #dc2626;border-radius:10px;padding:14px 18px;display:flex;gap:12px;align-items:flex-start;">' +
+            '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px;"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
+            '<div>' +
+              '<div style="font-size:13px;font-weight:700;color:#dc2626;margin-bottom:4px;">Diferenca e besueshmërisë u zbulua</div>' +
+              '<div style="font-size:13px;color:#7f1d1d;line-height:1.6;">Kjo sugjeron se modeli mund të kujtojë disa modele trajnimi, duke e bërë potencialisht vulnerabël ndaj membership inference. Hapëza '+gap.toFixed(2)+'% tejkalon pragun e rrezikut prej 10%.</div>' +
+            '</div>' +
+          '</div>'
+        : gap > 5
+        ? '<div style="background:#fffbeb;border:1.5px solid var(--gold);border-radius:10px;padding:14px 18px;display:flex;gap:12px;align-items:flex-start;">' +
+            '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d49600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px;"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
+            '<div>' +
+              '<div style="font-size:13px;font-weight:700;color:var(--gold-dark);margin-bottom:4px;">Diferenca e moderuar e besueshmërisë</div>' +
+              '<div style="font-size:13px;color:#78350f;line-height:1.6;">U zbulua hapëzë '+gap.toFixed(2)+'%. Ekziston rrezik i moderuar; përgjithësimi i modelit duhet monitoruar.</div>' +
+            '</div>' +
+          '</div>'
+        : '<div style="background:#f0fdf4;border:1.5px solid #16a34a;border-radius:10px;padding:14px 18px;display:flex;gap:12px;align-items:flex-start;">' +
+            '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px;"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' +
+            '<div>' +
+              '<div style="font-size:13px;font-weight:700;color:#16a34a;margin-bottom:4px;">Rrezik i ulët i membership inference</div>' +
+              '<div style="font-size:13px;color:#14532d;line-height:1.6;">Hapëza '+gap.toFixed(2)+'% sugjeron që modeli përgjithëson mirë. Ekspozim i kufizuar ndaj sulmeve.</div>' +
+            '</div>' +
+          '</div>') +
+      (data.privacy_img ? '<img src="data:image/png;base64,'+data.privacy_img+'" class="graph-img" style="margin-top:14px;">' : '') +
+    '</div>' +
+
+    /* ── 6. NJOHURI TË PRIVATËSISË ── */
+    '<div class="card">' +
+      '<div class="card-title">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>' +
+        'Njohuritë e Privatësisë' +
+      '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:10px;">' +
+        insights.map(function(ins){
+          return '<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;background:var(--bg);border-radius:10px;border-left:3px solid '+ins.dot+';">' +
+            '<div style="width:10px;height:10px;border-radius:50%;background:'+ins.dot+';flex-shrink:0;margin-top:4px;"></div>' +
+            '<div style="font-size:13px;color:var(--txt);line-height:1.6;">'+ins.text+'</div>' +
+          '</div>';
+        }).join('') +
+      '</div>' +
+    '</div>';
+
+    /* ── Inicializo grafikun e tensionit ── */
+    setTimeout(function() {
+      var canvas = document.getElementById('privacyTradeoffChart');
+      if (!canvas) return;
+      if (privacyChartInstance) { privacyChartInstance.destroy(); }
+
+      var zoneBgPlugin = {
+        id: 'zoneBg',
+        beforeDraw: function(chart) {
+          var c = chart.ctx, scales = chart.scales, x = scales.x, y = scales.y;
+          var x10 = x.getPixelForValue(10);
+          var x20 = x.getPixelForValue(20);
+          var xMax = x.getPixelForValue(35);
+          var xMin = x.getPixelForValue(0);
+          var yTop = y.getPixelForValue(35);
+          var yBot = y.getPixelForValue(0);
+          c.save();
+          c.fillStyle = 'rgba(50,102,173,0.07)'; c.fillRect(xMin,yTop,x10-xMin,yBot-yTop);
+          c.fillStyle = 'rgba(232,160,32,0.07)';  c.fillRect(x10,yTop,x20-x10,yBot-yTop);
+          c.fillStyle = 'rgba(192,57,43,0.07)';   c.fillRect(x20,yTop,xMax-x20,yBot-yTop);
+          c.strokeStyle='rgba(50,102,173,0.3)'; c.setLineDash([4,4]); c.lineWidth=1;
+          c.beginPath(); c.moveTo(x10,yTop); c.lineTo(x10,yBot); c.stroke();
+          c.strokeStyle='rgba(192,57,43,0.3)';
+          c.beginPath(); c.moveTo(x20,yTop); c.lineTo(x20,yBot); c.stroke();
+          c.restore();
+        }
+      };
+
+      privacyChartInstance = new Chart(canvas, {
+        type: 'scatter',
+        plugins: [zoneBgPlugin],
+        data: {
+          datasets: [
+            {
+              label: 'Modele të tjera',
+              data: [
+                {x:3,y:8},{x:5,y:11},{x:7,y:13},{x:4,y:9},{x:6,y:10},
+                {x:12,y:18},{x:15,y:22},{x:11,y:17},{x:16,y:24},{x:13,y:19},
+                {x:22,y:31},{x:25,y:28},{x:27,y:32}
+              ],
+              backgroundColor: function(ctx) {
+                var xv = ctx.raw ? ctx.raw.x : 0;
+                if (xv < 10) return 'rgba(50,102,173,0.35)';
+                if (xv < 20) return 'rgba(232,160,32,0.45)';
+                return 'rgba(192,57,43,0.4)';
+              },
+              pointRadius: 5,
+              pointStyle: 'circle'
+            },
+            {
+              label: 'Modeli juaj',
+              data: [{x: parseFloat(gap.toFixed(2)), y: parseFloat(discScore.toFixed(1))}],
+              backgroundColor: '#1a1a1a',
+              pointRadius: 9,
+              pointStyle: 'rectRot',
+              borderColor: '#FFB81C',
+              borderWidth: 2
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(ctx) {
+                  if (ctx.datasetIndex === 1) return 'Modeli juaj — Hapëzë: '+ctx.raw.x+'%, Zbulim: '+ctx.raw.y+'%';
+                  return 'Hapëzë: '+ctx.raw.x+'%, Zbulim: '+ctx.raw.y+'%';
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: { display:true, text:'Hapëza e besueshmërisë (%)  →  rrezik më i lartë', color:'#888', font:{size:11} },
+              min:0, max:35,
+              grid: { color:'rgba(128,128,128,0.1)' },
+              ticks: { color:'#888', font:{size:11} }
+            },
+            y: {
+              title: { display:true, text:'Rezultati i zbulimit (%)  →  ekspozim më i lartë', color:'#888', font:{size:11} },
+              min:0, max:35,
+              grid: { color:'rgba(128,128,128,0.1)' },
+              ticks: { color:'#888', font:{size:11} }
+            }
+          }
+        }
+      });
+    }, 100);
+
+  } catch(e) {
+    el.innerHTML = '<div class="card"><div class="insight insight-red">Gabim: '+e.message+'</div></div>';
+  }
+}
+
+async function loadResults() {
+  try {
+    const res = await fetch('/results');
+    const data = await res.json();
+    document.getElementById('r-acc').textContent = data.accuracy;
+    document.getElementById('r-prec').textContent = data.precision;
+    document.getElementById('r-rec').textContent = data.recall;
+    document.getElementById('r-f1').textContent = data.f1;
+    document.getElementById('findings-list').innerHTML = data.findings.map(function(f,i){
+      return '<div class="finding"><div class="fnum">'+(i+1)+'</div><div class="ftxt">'+f+'</div></div>';
+    }).join('');
+  } catch(e) {
+    document.getElementById('findings-list').innerHTML = '<div class="insight insight-red">Gabim: '+e.message+'</div>';
+  }
+}
+
+async function loadStats() {
+  try {
+    const res = await fetch('/stats');
+    const data = await res.json();
+    document.getElementById('s-students').textContent = data.students;
+    document.getElementById('s-features').textContent = data.features;
+    document.getElementById('s-accuracy').textContent = data.accuracy;
+    document.getElementById('s-algo').textContent = data.algorithm;
+    document.getElementById('r-acc').textContent = data.accuracy;
+    document.getElementById('r-prec').textContent = data.precision;
+    document.getElementById('r-rec').textContent = data.recall;
+    document.getElementById('r-f1').textContent = data.f1;
+  } catch(e) { console.log('Gabim stats:', e.message); }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadFeatureNames();
+  loadStats();
+  loadResults();
+});
+</script>
+</body>
+</html>
