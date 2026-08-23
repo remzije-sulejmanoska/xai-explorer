@@ -16,6 +16,14 @@ XAI Explorer is a Flask-based web platform built as part of a diploma thesis on 
 
 Most XAI tools stop at "here is which features mattered." This project goes a step further and asks: **what does an explanation leak about the data it was trained on, and does it matter which explainability method you trust?**
 
+## Thesis Abstract (English)
+
+Modern Machine Learning models, particularly ensemble methods and deep neural networks, often function as "black boxes": highly accurate, but opaque about the reasoning behind their predictions. This lack of transparency limits trust and accountability in high-stakes applications such as education, healthcare, and finance. This thesis addresses that gap by comparing two leading Explainable AI (XAI) techniques — SHAP (SHapley Additive Explanations) and LIME (Local Interpretable Model-Agnostic Explanations) — both theoretically and through a purpose-built interactive web platform.
+
+A Random Forest classifier was trained on the UCI Student Performance dataset to predict academic outcomes, with SHAP and LIME applied to the same model and predictions to enable direct comparison. The results show that while both methods largely agree on which features matter, they can diverge substantially in the magnitude of reported effects. Beyond explainability, the platform introduces two original contributions: a Feature Risk Score that flags which features carry the most privacy-relevant explanatory weight, and a Membership Inference Attack simulation that quantifies how much a model's explanations may expose about its training data. Together, these findings demonstrate that explainability and privacy are interconnected concerns — the same feature importance that makes a model interpretable can also make it more exposed.
+
+**Full thesis (Albanian):** [`docs/thesis.pdf`](docs/thesis.pdf)
+
 ## Key Highlights
 
 - **Global vs. local explainability compared side by side** — SHAP (TreeExplainer) and LIME (LimeTabularExplainer) are run on the same model and the same predictions, so their outputs can be directly compared rather than evaluated in isolation.
